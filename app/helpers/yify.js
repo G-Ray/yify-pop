@@ -3,7 +3,7 @@ exports.getParams = function (params, baseURL) {
 
   // Set Defaults
   yify.search = '';
-  yify.sort = 'date';
+  yify.sort = 'seeds';
   yify.genre = 'all';
   yify.page = 1;
   yify.set = '&set=1';
