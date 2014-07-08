@@ -5,6 +5,8 @@ exports.create = function(self, streamURL, hostname, params) {
   var http = require('http');
   var fs = require('fs');
   var opensrt = require('opensrt_js');
+  var iconv = require('iconv-lite');
+  var charsetDetect = require('jschardet');
 
   var isWin = process.platform === 'win32';
 
@@ -63,12 +65,31 @@ exports.create = function(self, streamURL, hostname, params) {
                   zipEntries.forEach(function(zipEntry) {
                       var fileName = zipEntry.entryName.toString();
                       var i = fileName.lastIndexOf('.');
-                      if (fileName.substr(i) == '.srt') { // Only unzip the srt file
+                      if (fileName.substr(i) == '.srt') { // unzip only the srt file
                         var dir = "public/subtitles/" + yifyResponse.MovieTitleClean + '/';
                         zip.extractEntryTo(fileName, dir , false, true);
-                        fs.renameSync(dir + fileName, dir + lang + '.srt'); // Rename to language.srt
+
+                        var buffer = fs.readFileSync(dir + fileName);
+                        var charset = charsetDetect.detect(buffer);
+
+                        if(charset.encoding != "UTF-8") {
+                          // Encode the subtitle in UTF-8
+                          console.log("Converting to UTF-8");
+                          var input = fs.createReadStream(dir + fileName)
+                          var output = fs.createWriteStream(dir + lang + '.srt');
+                          input.pipe(iconv.decodeStream(charset.encoding))
+                              .pipe(iconv.encodeStream('utf8'))
+                              .pipe(output)
+
+                          console.log(dir + fileName);
+
+                          fs.unlinkSync(dir + fileName); //remove the non-utf8 file
+                        }
+                        else {
+                          fs.renameSync(dir + fileName, dir + lang + '.srt'); // Rename to language.srt
+                        }
                       }
-                      fs.unlinkSync(dest); // Remove the zip
+                    fs.unlinkSync(dest); // Remove the zip
                   });
                 }
 
@@ -119,13 +140,14 @@ exports.create = function(self, streamURL, hostname, params) {
             data.peers = '0';
             data.cover = show.images.poster;
 
+            // Split arguments and take the filename
             var fileName = params.file.split("&");
             for (var i=0; i<fileName.length; i++) {
                tmp = fileName[i].split("=");
                if ( [tmp[0]] == "dn" ) { fileName = tmp[1]; }
              }
 
-            // prepare the query to fetch tv show subtitles
+            // Prepare query to fetch tv show subtitles
             var query = {
               imdbid: params.id,
               season: params.seasons,
