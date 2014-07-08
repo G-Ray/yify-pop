@@ -65,7 +65,7 @@ exports.create = function(self, streamURL, hostname, params) {
                   zipEntries.forEach(function(zipEntry) {
                       var fileName = zipEntry.entryName.toString();
                       var i = fileName.lastIndexOf('.');
-                      if (fileName.substr(i) == '.srt') { // unzip only the srt file
+                      if (fileName.substr(i).toUpperCase() == '.SRT') { // unzip only the srt file
                         var dir = "public/subtitles/" + yifyResponse.MovieTitleClean + '/';
                         zip.extractEntryTo(fileName, dir , false, true);
 
@@ -75,6 +75,12 @@ exports.create = function(self, streamURL, hostname, params) {
                         if(charset.encoding != "UTF-8") {
                           // Encode the subtitle in UTF-8
                           console.log("Converting to UTF-8");
+
+                          if(fileName === lang + '.srt') {
+                            fs.renameSync(dir + fileName, dir + lang + '-non-utf8.srt');
+                            fileName = lang + '-non-utf8.srt';
+                          }
+
                           var input = fs.createReadStream(dir + fileName)
                           var output = fs.createWriteStream(dir + lang + '.srt');
                           input.pipe(iconv.decodeStream(charset.encoding))
@@ -86,7 +92,9 @@ exports.create = function(self, streamURL, hostname, params) {
                           fs.unlinkSync(dir + fileName); //remove the non-utf8 file
                         }
                         else {
-                          fs.renameSync(dir + fileName, dir + lang + '.srt'); // Rename to language.srt
+                          if(fileName != lang + '.srt') {
+                            fs.renameSync(dir + fileName, dir + lang + '.srt'); // Rename to language.srt
+                          }
                         }
                       }
                     fs.unlinkSync(dest); // Remove the zip
