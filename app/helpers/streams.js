@@ -109,7 +109,7 @@ exports.create = function(self, streamURL, hostname, params) {
                     fetchSub(subUrl, 'public/subtitles/' + lang + '.zip', lang, unzip);
                     // Build the subtitle url
                     if(lang === 'french' || lang === 'english') {
-                      subtitles[lang] = 'http://' + hostname + ":4000" + '/subtitles/';
+                      subtitles[lang] = 'http://' + hostname + '/subtitles/';
                       subtitles[lang] += encodeURIComponent(yifyResponse.MovieTitleClean) + '/' + lang + '.srt';
                     }
                   }
