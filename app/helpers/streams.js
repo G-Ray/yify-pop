@@ -73,8 +73,6 @@ exports.create = function(self, streamURL, hostname, params) {
                         var charset = charsetDetect.detect(buffer);
 
                         if(charset.encoding != "UTF-8") {
-                          // Encode the subtitle in UTF-8
-                          console.log("Converting to UTF-8");
 
                           if(fileName === lang + '.srt') {
                             fs.renameSync(dir + fileName, dir + lang + '-non-utf8.srt');
@@ -82,12 +80,14 @@ exports.create = function(self, streamURL, hostname, params) {
                           }
 
                           var input = fs.createReadStream(dir + fileName)
+                          if(lang === 'french')  {
+                            charset.encoding = 'ISO-8859-15';
+                          }
+
                           var output = fs.createWriteStream(dir + lang + '.srt');
                           input.pipe(iconv.decodeStream(charset.encoding))
                               .pipe(iconv.encodeStream('utf8'))
                               .pipe(output)
-
-                          console.log(dir + fileName);
 
                           fs.unlinkSync(dir + fileName); //remove the non-utf8 file
                         }
@@ -105,10 +105,13 @@ exports.create = function(self, streamURL, hostname, params) {
                   for (var lang in yifySubsResponse.subs[subs]) {
                     // TODO: Pick the highest rated sub
                     var subUrl = 'http://www.yifysubtitles.com' + yifySubsResponse.subs[subs][lang][0].url;
+
                     fetchSub(subUrl, 'public/subtitles/' + lang + '.zip', lang, unzip);
                     // Build the subtitle url
-                    subtitles[lang] = 'http://' + hostname + '/subtitles/';
-                    subtitles[lang] += encodeURIComponent(yifyResponse.MovieTitleClean) + '/' + lang + '.srt';
+                    if(lang === 'french' || lang === 'english') {
+                      subtitles[lang] = 'http://' + hostname + ":4000" + '/subtitles/';
+                      subtitles[lang] += encodeURIComponent(yifyResponse.MovieTitleClean) + '/' + lang + '.srt';
+                    }
                   }
                 }
 
@@ -168,7 +171,12 @@ exports.create = function(self, streamURL, hostname, params) {
               if(err) return console.error("Error: " + err);
 
               for (var lang in res) {
-                subtitles[lang] = res[lang].url;
+                if(lang === 'fr') {
+                  subtitles['french'] = res[lang].url;
+                }
+                if(lang === 'en') {
+                  subtitles['english'] = res[lang].url;
+                }
               }
 
               childStream.start(function(pid){
