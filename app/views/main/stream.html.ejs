@@ -18,6 +18,7 @@
 <script>
   var streamURL = "<%= streamURL %>";
   var subs = <%- JSON.stringify(subtitles) %>;
+  var torrent = "<%= decodeURIComponent(params.file) %>";
 
   var languageMapping = {
     'albanian': 'sq',
@@ -67,29 +68,41 @@
     setTimeout(function(){
       var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false );
 
-      if (iOS) {
-        window.location.replace(streamURL);
-      }
-      else {
-
+      if(torrent.search(/xvid/i) !==-1 ) {
         $('.buffer-message').hide();
 
-        var video = '<video id="player" class="video-js vjs-default-skin center-block" controls preload="auto" width="auto" height="auto" >';
 
-        video += '<source src=' + streamURL + ' type="video/mp4">';
-
+        var video = '<br><p align="center">Cet épisode étant encodé en Xvid, il ne peut être joué dans un navigateur.';
+        video += " Vous pouvez lire cet épisode avec VLC (ou un autre lecteur), en ouvrant l'adresse (Media>Ouvrir un flux résau): " + streamURL;
+        video += "<br>Les sous-tires de cet épisodes peuvent être récupérés ici:<br>";
         for (var sub in subs) {
-          video += '<track kind="subtitles" src=' + subs[sub] + ' srclang=' + languageMapping[sub] + ' label=' + sub + '>';
+          video += "<a href=" + subs[sub] + ">" + sub + "</a>" + "<br>";
         }
-
-        video +=  '/></video>';
-
+        video += '</p>';
         $('.player').append(video);
-        _V_('player');
-        _V_('player').play();
-
       }
+      else {
+        if (iOS) {
+          window.location.replace(streamURL);
+        }
+        else {
+          $('.buffer-message').hide();
 
+          var video = '<video id="player" class="video-js vjs-default-skin center-block" controls preload="auto" width="auto" height="auto" >';
+
+          video += '<source src=' + streamURL + ' type="video/mp4">';
+
+          for (var sub in subs) {
+            video += '<track kind="subtitles" src=' + subs[sub] + ' srclang=' + languageMapping[sub] + ' label=' + sub + '>';
+          }
+
+          video +=  '/></video>';
+
+          $('.player').append(video);
+          _V_('player');
+          _V_('player').play();
+        }
+      }
     }, 6000);
   });
 </script>
