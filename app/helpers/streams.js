@@ -161,7 +161,7 @@ exports.create = function(self, streamURL, hostname, params) {
             // Prepare query to fetch tv show subtitles
             var query = {
               imdbid: params.id,
-              season: params.seasons,
+              season: params.season,
               episode: params.episode,
               filename: fileName
             }
