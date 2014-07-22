@@ -7,6 +7,7 @@ exports.create = function(self, streamURL, hostname, params) {
   var opensrt = require('opensrt_js');
   var iconv = require('iconv-lite');
   var charsetDetect = require('jschardet');
+  var _ = require('underscore');
 
   var isWin = process.platform === 'win32';
 
@@ -72,8 +73,7 @@ exports.create = function(self, streamURL, hostname, params) {
                         var buffer = fs.readFileSync(dir + fileName);
                         var charset = charsetDetect.detect(buffer);
 
-                        if(charset.encoding != "UTF-8") {
-
+                        if(charset.encoding != "utf-8") {
                           if(fileName === lang + '.srt') {
                             fs.renameSync(dir + fileName, dir + lang + '-non-utf8.srt');
                             fileName = lang + '-non-utf8.srt';
@@ -103,8 +103,7 @@ exports.create = function(self, streamURL, hostname, params) {
 
                 for (var subs in yifySubsResponse.subs) {
                   for (var lang in yifySubsResponse.subs[subs]) {
-                    // TODO: Pick the highest rated sub
-                    var subUrl = 'http://www.yifysubtitles.com' + yifySubsResponse.subs[subs][lang][0].url;
+                    var subUrl = 'http://www.yifysubtitles.com' + _.max(yifySubsResponse.subs[subs][lang], function(s){return s.rating;}).url;
 
                     fetchSub(subUrl, 'public/subtitles/' + lang + '.zip', lang, unzip);
                     // Build the subtitle url

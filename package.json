@@ -11,7 +11,8 @@
     "rimraf": "2.2.8",
     "opensrt_js": "0.0.16",
     "iconv-lite": "*",
-    "jschardet": "*"
+    "jschardet": "*",
+    "underscore": "*"
   },
   "devDependencies": {},
   "engines": {
