@@ -38,18 +38,33 @@ var Main = function () {
           nextPage = '#';
         }
 
-        self.respond({
-          params: params,
-          movies: yifyResponse.MovieList,
-          baseURL: baseURL,
-          previousPage: yifyRequest.previousPage,
-          nextPage: yifyRequest.nextPage,
-          previousDisabled: yifyRequest.previousDisabled,
-          nextDisabled: yifyRequest.nextDisabled
-        }, {
-          format: 'html',
-          template: 'app/views/main/index'
-        });
+        // Fetch imdb covers
+        var cover = 0;
+        for(var m in yifyResponse.MovieList) {
+          request('http://www.imdbapi.com/?i=' + yifyResponse.MovieList[m].ImdbCode, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+              var imdbResponse = JSON.parse(body);
+              yifyResponse.MovieList[cover].CoverImage = imdbResponse.Poster;
+            }
+            cover++;
+
+            // All covers are fetched
+            if(cover == yifyResponse.MovieList.length) {
+              self.respond({
+                params: params,
+                movies: yifyResponse.MovieList,
+                baseURL: baseURL,
+                previousPage: yifyRequest.previousPage,
+                nextPage: yifyRequest.nextPage,
+                previousDisabled: yifyRequest.previousDisabled,
+                nextDisabled: yifyRequest.nextDisabled
+              }, {
+                format: 'html',
+                template: 'app/views/main/index'
+              });
+            }
+          });
+        }
       }
     });
   };
