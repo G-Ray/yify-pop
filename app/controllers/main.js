@@ -39,17 +39,29 @@ var Main = function () {
         }
 
         // Fetch imdb covers
-        var cover = 0;
-        for(var m in yifyResponse.MovieList) {
+        var covers={};
+        var tmp = 0 ;
+
+        for(var m=0; m< yifyResponse.MovieList.length; m++) {
+          //console.log(yifyResponse.MovieList[m].ImdbCode);
           request('http://www.imdbapi.com/?i=' + yifyResponse.MovieList[m].ImdbCode, function (error, response, body) {
             if (!error && response.statusCode == 200) {
               var imdbResponse = JSON.parse(body);
-              yifyResponse.MovieList[cover].CoverImage = imdbResponse.Poster;
+              covers[imdbResponse.imdbID] = imdbResponse.Poster;
+              tmp++;
             }
-            cover++;
 
             // All covers are fetched
-            if(cover == yifyResponse.MovieList.length) {
+            if(yifyResponse.MovieList.length == tmp) {
+              for(var cover in covers) {
+                console.log(cover);
+                for(var m in yifyResponse.MovieList) {
+                  if (yifyResponse.MovieList[m].ImdbCode == cover)
+                    yifyResponse.MovieList[m].CoverImage = covers[cover];
+                  }
+              }
+
+              console.log(yifyResponse.MovieList);
               self.respond({
                 params: params,
                 movies: yifyResponse.MovieList,
