@@ -49,7 +49,7 @@ if (params.keywords && params.keywords !=='') {
   }
 
   // Set request URL
-  yify.url = 'http://yts.re/api/list.json?limit=18&quality=720p&sort=';
+  yify.url = 'http://yts.re/api/list.json?limit=27&quality=720p&sort=';
   yify.url += yify.sort + '&genre=' + yify.genre + yify.search + yify.set;
 
   return yify;
