@@ -15,29 +15,6 @@ var init = function(cb) {
     });
   }
   cb();
-
-  var io = require('socket.io').listen(geddy.server);
-
-  var users = 0;
-  io.on('connection', function(socket){
-    users++;
-
-    socket.on('disconnect', function(){
-      users--;
-
-      //Kill all processes
-      if(users == 0) {
-        var rimraf = require('rimraf').sync;
-        console.log(geddy.config.streamingProcesses.length);
-        for (var i=geddy.config.streamingProcesses.length-1; i >= 0; i--) {
-          // Remove subtitles folder
-          rimraf('public/subtitles/' + geddy.config.streamingProcesses[i].data.title);
-          geddy.config.streamingProcesses[i].child.stop();
-          geddy.config.streamingProcesses.splice(i, 1);
-        }
-      }
-    });
-  });
 };
 
 exports.init = init;
