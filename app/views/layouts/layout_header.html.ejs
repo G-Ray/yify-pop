@@ -25,6 +25,18 @@
     <%- scriptLink('video.js', {type: 'text/javascript'}) %>
     <%- scriptLink('fuckadblock.js', {type: 'text/javascript'}) %>
 
+    <script>
+      function adBlockDetected() {
+        alert('Merci de désactiver adblock sur ce domaine.');
+      }
+
+      if(typeof fuckAdBlock === 'undefined') {
+        adBlockDetected();
+      } else {
+        fuckAdBlock.onDetected(adBlockDetected);
+      }
+    </script>
+
     <link href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
 
     <script>
