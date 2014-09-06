@@ -114,11 +114,7 @@ exports.create = function(self, streamURL, hostname, params) {
                   }
                 }
 
-                var pidToKill = 0;
-
                 childStream.start(function(pid){
-                  pidToKill = pid;
-
                   geddy.config.streamingProcesses.push({
                     pid: pid,
                     child: childStream,
@@ -126,31 +122,6 @@ exports.create = function(self, streamURL, hostname, params) {
                     stream: streamURL,
                     data: data,
                     subtitles: subtitles
-                  });
-                });
-
-                var io = require('socket.io').listen(geddy.server);
-
-                var spectators = 0;
-                io.on('connection', function(socket){
-                  spectators++;
-
-                  socket.on('disconnect', function(){
-                    spectators--;
-
-                    if(spectators == 0) {
-                      // Kill the streaming process
-                      var rimraf = require('rimraf').sync;
-                      for (var i=0; i < geddy.config.streamingProcesses.length; i++) {
-                        if (geddy.config.streamingProcesses[i].pid == pidToKill) {
-                          // Remove subtitles folder
-                          rimraf('public/subtitles/' + geddy.config.streamingProcesses[i].data.title);
-                          geddy.config.streamingProcesses[i].child.stop();
-                          geddy.config.streamingProcesses.splice(i, 1);
-                          console.log('Child is now stopped.');
-                        }
-                      }
-                    }
                   });
                 });
 

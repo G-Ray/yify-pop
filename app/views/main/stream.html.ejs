@@ -15,11 +15,6 @@
   <a class="btn btn-success" href="<%= streamURL %>">Watch Now</a>
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io();
-</script>
-
 <script>
   var streamURL = "<%= streamURL %>";
   var subs = <%- JSON.stringify(subtitles) %>;
