@@ -15,6 +15,7 @@ var init = function(cb) {
     });
   }
   cb();
+  geddy.config.io = require('socket.io').listen(geddy.server);
 };
 
 exports.init = init;
