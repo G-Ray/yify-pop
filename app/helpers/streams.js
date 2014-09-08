@@ -30,36 +30,38 @@ exports.create = function(self, streamURL, hostname, params) {
       streamURL = "http://" + hostname + ":" + port;
       var subtitles = {};
 
-      var io =  geddy.config.io;
+      function createSocket(pid) {
+        var io =  geddy.config.io;
 
-      var nsp = io.of('/' + decodeURIComponent(params.file)); // One namespace per stream
-      nsp.on('connection', function (socket) {
-        console.log('CONNECTION');
-        // Add a spectator
-        for (var i=0; i < geddy.config.streamingProcesses.length; i++) {
-          if (decodeURIComponent(params.file) === geddy.config.streamingProcesses[i].torrent) {
-            geddy.config.streamingProcesses[i].spectators = io.of('/' + decodeURIComponent(params.file)).sockets.length;
-          }
-        }
-
-        socket.on('disconnect', function (data) {
-          console.log('DISCONNECT');
+        var nsp = io.of('/' + pid); // One namespace per stream
+        nsp.on('connection', function (socket) {
+          console.log('CONNECTION');
+          // Add a spectator
           for (var i=0; i < geddy.config.streamingProcesses.length; i++) {
-            if (decodeURIComponent(params.file) === geddy.config.streamingProcesses[i].torrent) {
-              // Remove a spectator
-              geddy.config.streamingProcesses[i].spectators = io.of('/' + decodeURIComponent(params.file)).sockets.length;
-              // There is no spectator anymore, kill the stream
-              if(io.of('/' + decodeURIComponent(params.file)).sockets.length === 0) {
-                var rimraf = require('rimraf').sync;
-                rimraf('public/subtitles/' + geddy.config.streamingProcesses[i].data.title);
-                geddy.config.streamingProcesses[i].child.stop();
-                geddy.config.streamingProcesses.splice(i, 1);
-                console.log('Child is now stopped.');
-              }
+            if (pid === geddy.config.streamingProcesses[i].pid) {
+              geddy.config.streamingProcesses[i].spectators = io.of('/' + pid).sockets.length;
             }
           }
+
+          socket.on('disconnect', function (data) {
+            console.log('DISCONNECT');
+            for (var i=0; i < geddy.config.streamingProcesses.length; i++) {
+              if (pid === geddy.config.streamingProcesses[i].pid) {
+                // Remove a spectator
+                geddy.config.streamingProcesses[i].spectators = io.of('/' + pid).sockets.length;
+                // There is no spectator anymore, kill the stream
+                if(io.of('/' + pid).sockets.length === 0) {
+                  var rimraf = require('rimraf').sync;
+                  rimraf('public/subtitles/' + geddy.config.streamingProcesses[i].data.title);
+                  geddy.config.streamingProcesses[i].child.stop();
+                  geddy.config.streamingProcesses.splice(i, 1);
+                  console.log('Child is now stopped.');
+                }
+              }
+            }
+          });
         });
-      });
+      }
 
       // if it's a movie
       if (!params.show || params.show !== '1') {
@@ -146,6 +148,8 @@ exports.create = function(self, streamURL, hostname, params) {
                 }
 
                 childStream.start(function(pid){
+                  createSocket(pid);
+                  params.pid = pid;
                   geddy.config.streamingProcesses.push({
                     pid: pid,
                     child: childStream,
@@ -211,6 +215,8 @@ exports.create = function(self, streamURL, hostname, params) {
               }
 
               childStream.start(function(pid){
+                createSocket(pid);
+                params.pid = pid;
                 geddy.config.streamingProcesses.push({
                   pid: pid,
                   child: childStream,

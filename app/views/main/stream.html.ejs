@@ -21,8 +21,9 @@
   var streamURL = "<%= streamURL %>";
   var subs = <%- JSON.stringify(subtitles) %>;
   var torrent = "<%= decodeURIComponent(params.file) %>";
+  var pid = "<%= params.pid %>";
 
-  var socket = io('/' + torrent);
+  var socket = io('/' + pid);
 
   var languageMapping = {
     'albanian': 'sq',
