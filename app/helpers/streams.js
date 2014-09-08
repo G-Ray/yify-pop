@@ -23,12 +23,43 @@ exports.create = function(self, streamURL, hostname, params) {
         command: osSpecificCommand,
         args: osSpecificArgs,
         cbStdout: function(data) {
-          console.log(String(data));
+          //console.log(String(data));
         }
       });
 
       streamURL = "http://" + hostname + ":" + port;
       var subtitles = {};
+
+      var io =  geddy.config.io;
+
+      var nsp = io.of('/' + decodeURIComponent(params.file)); // One namespace per stream
+      nsp.on('connection', function (socket) {
+        console.log('CONNECTION');
+        // Add a spectator
+        for (var i=0; i < geddy.config.streamingProcesses.length; i++) {
+          if (decodeURIComponent(params.file) === geddy.config.streamingProcesses[i].torrent) {
+            geddy.config.streamingProcesses[i].spectators = io.of('/' + decodeURIComponent(params.file)).sockets.length;
+          }
+        }
+
+        socket.on('disconnect', function (data) {
+          console.log('DISCONNECT');
+          for (var i=0; i < geddy.config.streamingProcesses.length; i++) {
+            if (decodeURIComponent(params.file) === geddy.config.streamingProcesses[i].torrent) {
+              // Remove a spectator
+              geddy.config.streamingProcesses[i].spectators = io.of('/' + decodeURIComponent(params.file)).sockets.length;
+              // There is no spectator anymore, kill the stream
+              if(io.of('/' + decodeURIComponent(params.file)).sockets.length === 0) {
+                var rimraf = require('rimraf').sync;
+                rimraf('public/subtitles/' + geddy.config.streamingProcesses[i].data.title);
+                geddy.config.streamingProcesses[i].child.stop();
+                geddy.config.streamingProcesses.splice(i, 1);
+                console.log('Child is now stopped.');
+              }
+            }
+          }
+        });
+      });
 
       // if it's a movie
       if (!params.show || params.show !== '1') {
@@ -121,7 +152,8 @@ exports.create = function(self, streamURL, hostname, params) {
                     torrent: decodeURIComponent(params.file),
                     stream: streamURL,
                     data: data,
-                    subtitles: subtitles
+                    subtitles: subtitles,
+                    spectators: 0
                   });
                 });
 
@@ -185,7 +217,8 @@ exports.create = function(self, streamURL, hostname, params) {
                   torrent: decodeURIComponent(params.file),
                   stream: streamURL,
                   data: data,
-                  subtitles: subtitles
+                  subtitles: subtitles,
+                  spectators: 0
                 });
               });
 

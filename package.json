@@ -12,7 +12,8 @@
     "opensrt_js": "0.0.16",
     "iconv-lite": "*",
     "jschardet": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "socket.io": "1.0.5"
   },
   "devDependencies": {},
   "engines": {

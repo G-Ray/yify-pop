@@ -15,10 +15,14 @@
   <a class="btn btn-success" href="<%= streamURL %>">Watch Now</a>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+
 <script>
   var streamURL = "<%= streamURL %>";
   var subs = <%- JSON.stringify(subtitles) %>;
   var torrent = "<%= decodeURIComponent(params.file) %>";
+
+  var socket = io('/' + torrent);
 
   var languageMapping = {
     'albanian': 'sq',
