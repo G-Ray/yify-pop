@@ -15,6 +15,9 @@ var init = function(cb) {
     });
   }
   cb();
+
+  var cache_manager = require('cache-manager');
+  geddy.config.memory_cache = cache_manager.caching({store: 'memory', max: 100, ttl: 43200/*12H*/});
 };
 
 exports.init = init;

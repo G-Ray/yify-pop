@@ -42,6 +42,28 @@ var Main = function () {
         var nb_results = 0;
         var covers = {};
 
+        var memory_cache = geddy.config.memory_cache;
+        var moviesCachedId = params.sort+params.genre+params.set;
+
+        // Use cached data if there are ones
+        memory_cache.get(moviesCachedId, function(err, result) {
+          if(result != undefined) {
+              self.respond({
+                params: params,
+                movies: result,
+                baseURL: baseURL,
+                previousPage: yifyRequest.previousPage,
+                nextPage: yifyRequest.nextPage,
+                previousDisabled: yifyRequest.previousDisabled,
+                nextDisabled: yifyRequest.nextDisabled
+              }, {
+                format: 'html',
+                template: 'app/views/main/index'
+              });
+          }
+        });
+
+        // Retrieve data and cache the results
         for(var m in yifyResponse.MovieList) {
           request(tmdb.getParams(yifyResponse.MovieList[m].ImdbCode), function (error, response, body) {
             var tmdbResponse = JSON.parse(body);
@@ -52,6 +74,10 @@ var Main = function () {
               for(var m in yifyResponse.MovieList){
                 yifyResponse.MovieList[m].CoverImage = covers[yifyResponse.MovieList[m].ImdbCode];
               }
+
+              memory_cache.set(moviesCachedId, yifyResponse.MovieList, function(err) {
+                  if (err) { console.log(err); }
+              });
 
               self.respond({
                 params: params,
