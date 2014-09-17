@@ -15,7 +15,12 @@ var init = function(cb) {
     });
   }
   cb();
+
   geddy.config.io = require('socket.io').listen(geddy.server);
+
+  var cache_manager = require('cache-manager');
+  geddy.config.memory_cache = cache_manager.caching({store: 'memory', max: 100, ttl: 43200/*12H*/});
+
 };
 
 exports.init = init;

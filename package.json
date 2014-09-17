@@ -13,7 +13,8 @@
     "iconv-lite": "*",
     "jschardet": "*",
     "underscore": "*",
-    "socket.io": "1.0.5"
+    "socket.io": "1.0.5",
+    "cache-manager": "0.10.1"
   },
   "devDependencies": {},
   "engines": {
