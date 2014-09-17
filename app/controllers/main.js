@@ -18,6 +18,7 @@
 
 var yify = require('../helpers/yify');
 var eztv = require('../helpers/eztv');
+var tmdb = require('../helpers/tmdb');
 var streams = require('../helpers/streams');
 
 var Main = function () {
@@ -38,18 +39,35 @@ var Main = function () {
           nextPage = '#';
         }
 
-        self.respond({
-          params: params,
-          movies: yifyResponse.MovieList,
-          baseURL: baseURL,
-          previousPage: yifyRequest.previousPage,
-          nextPage: yifyRequest.nextPage,
-          previousDisabled: yifyRequest.previousDisabled,
-          nextDisabled: yifyRequest.nextDisabled
-        }, {
-          format: 'html',
-          template: 'app/views/main/index'
-        });
+        var nb_results = 0;
+        var covers = {};
+
+        for(var m in yifyResponse.MovieList) {
+          request(tmdb.getParams(yifyResponse.MovieList[m].ImdbCode), function (error, response, body) {
+            var tmdbResponse = JSON.parse(body);
+            covers[tmdbResponse.imdb_id] = 'http://image.tmdb.org/t/p/w154/' +  tmdbResponse.poster_path;
+            nb_results++;
+
+            if(nb_results === yifyResponse.MovieList.length) {
+              for(var m in yifyResponse.MovieList){
+                yifyResponse.MovieList[m].CoverImage = covers[yifyResponse.MovieList[m].ImdbCode];
+              }
+
+              self.respond({
+                params: params,
+                movies: yifyResponse.MovieList,
+                baseURL: baseURL,
+                previousPage: yifyRequest.previousPage,
+                nextPage: yifyRequest.nextPage,
+                previousDisabled: yifyRequest.previousDisabled,
+                nextDisabled: yifyRequest.nextDisabled
+              }, {
+                format: 'html',
+                template: 'app/views/main/index'
+              });
+            }
+          });
+        }
       }
     });
   };
