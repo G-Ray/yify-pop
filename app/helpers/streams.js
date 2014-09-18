@@ -147,19 +147,21 @@ exports.create = function(self, streamURL, hostname, params) {
                   }
                 }
 
-                childStream.start(function(pid){
-                  createSocket(pid);
-                  params.pid = pid;
-                  geddy.config.streamingProcesses.push({
-                    pid: pid,
-                    child: childStream,
-                    torrent: decodeURIComponent(params.file),
-                    stream: streamURL,
-                    data: data,
-                    subtitles: subtitles,
-                    spectators: 0
+                if(params.file != undefined) {
+                  childStream.start(function(pid){
+                    createSocket(pid);
+                    params.pid = pid;
+                    geddy.config.streamingProcesses.push({
+                      pid: pid,
+                      child: childStream,
+                      torrent: decodeURIComponent(params.file),
+                      stream: streamURL,
+                      data: data,
+                      subtitles: subtitles,
+                      spectators: 0
+                    });
                   });
-                });
+                }
 
                 self.respond({
                   params: params,
