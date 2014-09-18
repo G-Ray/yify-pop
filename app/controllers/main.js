@@ -43,7 +43,7 @@ var Main = function () {
         var covers = {};
 
         var memory_cache = geddy.config.memory_cache;
-        var moviesCachedId = params.sort+params.genre+params.set;
+        var moviesCachedId = params.sort+params.genre+params.set+params.search;
 
         // Use cached data if there are ones
         memory_cache.get(moviesCachedId, function(err, result) {
