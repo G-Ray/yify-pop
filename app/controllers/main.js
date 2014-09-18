@@ -67,12 +67,13 @@ var Main = function () {
         for(var m in yifyResponse.MovieList) {
           request(tmdb.getParams(yifyResponse.MovieList[m].ImdbCode), function (error, response, body) {
             var tmdbResponse = JSON.parse(body);
-            covers[tmdbResponse.imdb_id] = 'http://image.tmdb.org/t/p/w154/' +  tmdbResponse.poster_path;
+            covers[tmdbResponse.imdb_id] = tmdbResponse.poster_path;
             nb_results++;
 
             if(nb_results === yifyResponse.MovieList.length) {
               for(var m in yifyResponse.MovieList){
-                yifyResponse.MovieList[m].CoverImage = covers[yifyResponse.MovieList[m].ImdbCode];
+                if(covers[yifyResponse.MovieList[m].ImdbCode] != undefined)
+                  yifyResponse.MovieList[m].CoverImage = 'http://image.tmdb.org/t/p/w154/' + covers[yifyResponse.MovieList[m].ImdbCode];
               }
 
               memory_cache.set(moviesCachedId, yifyResponse.MovieList, function(err) {
